@@ -1,5 +1,12 @@
-import React, { useState } from "react";
 import {
+    addLocalContact,
+    Contact,
+    deleteLocalContact,
+    getLocalContacts,
+} from "@/services/sqliteService";
+import React, { useEffect, useState } from "react";
+import {
+    Alert,
     FlatList,
     StyleSheet,
     Text,
@@ -8,33 +15,54 @@ import {
     View,
 } from "react-native";
 
-interface Contact {
-  id: string;
-  name: string;
-  phone: string;
-}
-
 export default function ContactsScreen() {
-  const [contacts, setContacts] = useState<Contact[]>([
-    { id: "1", name: "Campus Security", phone: "+61 400 000 000" },
-  ]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
-  const addContact = () => {
-    if (name.trim() && phone.trim()) {
-      setContacts([...contacts, { id: Date.now().toString(), name, phone }]);
+  // Fetch verified guardians out of memory on component load
+  useEffect(() => {
+    loadGuardians();
+  }, []);
+
+  const loadGuardians = async () => {
+    const localData = await getLocalContacts();
+    setContacts(localData);
+  };
+
+  const handleRegisterGuardian = async () => {
+    if (!name.trim() || !phone.trim()) {
+      Alert.alert(
+        "Input Error",
+        "Please fill out both fields before registering.",
+      );
+      return;
+    }
+
+    const insertedId = await addLocalContact(name, phone);
+    if (insertedId) {
       setName("");
       setPhone("");
+      await loadGuardians(); // Refresh lists
+      Alert.alert(
+        "Success",
+        `${name} is now monitoring your security vectors.`,
+      );
     }
+  };
+
+  const handleDeleteGuardian = async (id: number | undefined) => {
+    if (id === undefined) return;
+    await deleteLocalContact(id);
+    await loadGuardians();
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Trusted Guardians</Text>
       <Text style={styles.subtitle}>
-        These contacts are alerted automatically upon a sudden impact sensor
-        event.
+        These contacts are parsed locally out of relational storage during
+        device runtime alerts.
       </Text>
 
       <View style={styles.form}>
@@ -53,18 +81,29 @@ export default function ContactsScreen() {
           value={phone}
           onChangeText={setPhone}
         />
-        <TouchableOpacity style={styles.addButton} onPress={addContact}>
-          <Text style={styles.addText}>Register Guardian</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={handleRegisterGuardian}
+        >
+          <Text style={styles.addText}>Register Secure Guardian</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
         data={contacts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.cardName}>{item.name}</Text>
-            <Text style={styles.cardPhone}>{item.phone}</Text>
+            <View>
+              <Text style={styles.cardName}>{item.name}</Text>
+              <Text style={styles.cardPhone}>{item.phone}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteGuardian(item.id)}
+            >
+              <Text style={styles.deleteText}>Remove</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -103,7 +142,7 @@ const styles = StyleSheet.create({
     borderColor: "#2C2C2C",
   },
   addButton: {
-    backgroundColor: "#BB86FC",
+    backgroundColor: "#03DAC6",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",
@@ -119,6 +158,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#2C2C2C",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   cardName: {
     color: "#FFFFFF",
@@ -126,7 +168,20 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   cardPhone: {
-    color: "#03DAC6",
+    color: "#BB86FC",
     marginTop: 4,
+  },
+  deleteButton: {
+    backgroundColor: "#CF667922",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#CF6679",
+  },
+  deleteText: {
+    color: "#CF6679",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

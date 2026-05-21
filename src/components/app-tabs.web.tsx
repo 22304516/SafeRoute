@@ -78,13 +78,13 @@ export function CustomTabList(props: TabListProps) {
 
         {props.children}
 
-        {/* Keeping the boilerplate link but updating context to look like help docs */}
+        {/* Keeping the link but updating context to look like help docs */}
         <ExternalLink href="https://docs.expo.dev" asChild>
           <Pressable style={styles.externalPressable}>
             <ThemedText type="link">Help</ThemedText>
             <SymbolView
               tintColor={colors.text}
-              name={{ ios: "questionmark.circle", web: "questionmark.circle" }}
+              name="questionmark.circle"
               size={12}
             />
           </Pressable>
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
-    bottom: 0, // Keeps the layout bar snapped securely to view borders
+    bottom: 0, // Keeps the layout bar pinned to view borders
   },
   innerContainer: {
     paddingVertical: Spacing.two,

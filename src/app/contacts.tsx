@@ -16,21 +16,25 @@ import {
 } from "react-native";
 
 export default function ContactsScreen() {
+  // State variables to manage the list of contacts and input field values
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
-  // Fetch verified guardians out of memory on component load
+  // Load the contacts automatically as soon as this screen opens
   useEffect(() => {
     loadGuardians();
   }, []);
 
+  // Helper function to grab contacts from SQLite and update the state
   const loadGuardians = async () => {
     const localData = await getLocalContacts();
     setContacts(localData);
   };
 
+  // Triggered when clicking the register button
   const handleRegisterGuardian = async () => {
+    // Basic validation to make sure the user didn't leave fields empty
     if (!name.trim() || !phone.trim()) {
       Alert.alert(
         "Input Error",
@@ -39,11 +43,14 @@ export default function ContactsScreen() {
       return;
     }
 
+    // Try saving the new contact info into the local SQLite database
     const insertedId = await addLocalContact(name, phone);
     if (insertedId) {
+      // If it worked, clear out the input text boxes so they are ready for the next one
       setName("");
       setPhone("");
-      await loadGuardians(); // Refresh lists
+      // Refresh the UI list so the new contact shows up instantly
+      await loadGuardians();
       Alert.alert(
         "Success",
         `${name} is now monitoring your security vectors.`,
@@ -51,9 +58,12 @@ export default function ContactsScreen() {
     }
   };
 
+  // Deletion logic for removing a contact
   const handleDeleteGuardian = async (id: number | undefined) => {
     if (id === undefined) return;
+    // Tell SQLite to drop the row matching this specific ID
     await deleteLocalContact(id);
+    // Reload the list so the UI updates and reflects the removal
     await loadGuardians();
   };
 
@@ -65,6 +75,7 @@ export default function ContactsScreen() {
         device runtime alerts.
       </Text>
 
+      {/* Input form section for adding new contacts */}
       <View style={styles.form}>
         <TextInput
           style={styles.input}
@@ -89,8 +100,10 @@ export default function ContactsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* List container that dynamically scrolls through the saved contacts */}
       <FlatList
         data={contacts}
+        // Fallback key generation if database ID is somehow missing
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
@@ -98,6 +111,7 @@ export default function ContactsScreen() {
               <Text style={styles.cardName}>{item.name}</Text>
               <Text style={styles.cardPhone}>{item.phone}</Text>
             </View>
+            {/* Simple pressable area to trigger individual deletion */}
             <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => handleDeleteGuardian(item.id)}
@@ -111,6 +125,7 @@ export default function ContactsScreen() {
   );
 }
 
+// Styling definitions for the dark theme layouts
 const styles = StyleSheet.create({
   container: {
     flex: 1,

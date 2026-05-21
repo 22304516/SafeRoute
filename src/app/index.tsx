@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
+  // State to track if the safety tracking system is turned on or off
   const [isGuardActive, setIsGuardActive] = useState<boolean>(false);
 
+  // Handles switching the tracking state and pops up a quick alert box to let the user know
   const toggleGuardSystem = () => {
     setIsGuardActive(!isGuardActive);
     Alert.alert(
@@ -14,6 +16,7 @@ export default function HomeScreen() {
     );
   };
 
+  // Big red panic button function - right now just shows a dummy alert, will connect to real GPS/SMS later
   const triggerInstantSOS = () => {
     Alert.alert(
       "🚨 EMERGENCY SOS",
@@ -23,11 +26,13 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* App Header section with the main title */}
       <View style={styles.header}>
         <Text style={styles.title}>SafeRoute</Text>
         <Text style={styles.tagline}>Solo Travel Protection Shield</Text>
       </View>
 
+      {/* Box showing current status. Dynamic styles change colors depending on whether tracking is active */}
       <View style={styles.statusBox}>
         <Text style={styles.statusLabel}>SHIELD STATUS</Text>
         <Text
@@ -40,6 +45,7 @@ export default function HomeScreen() {
         </Text>
       </View>
 
+      {/* Primary button to flip the tracking state on and off */}
       <TouchableOpacity
         style={[
           styles.mainButton,
@@ -52,6 +58,7 @@ export default function HomeScreen() {
         </Text>
       </TouchableOpacity>
 
+      {/* Emergency SOS button - needs to stay prominent at the bottom */}
       <TouchableOpacity style={styles.sosButton} onPress={triggerInstantSOS}>
         <Text style={styles.sosText}>INSTANT SOS</Text>
       </TouchableOpacity>
@@ -59,6 +66,7 @@ export default function HomeScreen() {
   );
 }
 
+// UI design styles - using a dark theme with standard material palette colors
 const styles = StyleSheet.create({
   container: {
     flex: 1,

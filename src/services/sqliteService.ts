@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 
-// Core interfaces for your relational data structures
+// Setting up the typescript shapes so the rest of the app knows what a contact or waypoint looks like
 export interface Contact {
   id?: number;
   name: string;
@@ -12,23 +12,24 @@ export interface Waypoint {
   latitude: number;
   longitude: number;
   timestamp: number;
-  synced: number; // 0 = local only, 1 = synced to cloud firestore
+  synced: number; // 0 means it's stuck on the phone, 1 means it successfully hit firestore
 }
 
+// Keeping track of the database instance globally so all functions can use it
 let db: SQLite.SQLiteDatabase | null = null;
 
 /**
- * Initializes the SQLite database and sets up structural relational tables.
+ * Fires up the database and creates the tables if they aren't already there
  */
 export const initDatabase = async (): Promise<void> => {
   try {
-    // Open or create the local standalone database file
+    // Spin up or look for the local db file
     db = await SQLite.openDatabaseAsync("saferoute.db");
 
-    // Enable Write-Ahead Logging (WAL) for faster storage transactions
+    // WAL mode helps make database reads and writes a bit speedier
     await db.execAsync(`PRAGMA journal_mode = WAL;`);
 
-    // 1. Create Contacts Table
+    // Table 1: Storing the user's emergency contacts
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +38,7 @@ export const initDatabase = async (): Promise<void> => {
       );
     `);
 
-    // 2. Create Waypoints Tracking Table
+    // Table 2: Storing breadcrumb GPS locations for offline tracking
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS waypoints (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,26 +59,28 @@ export const initDatabase = async (): Promise<void> => {
 };
 
 /* ==========================================================================
-   CONTACTS (GUARDIANS) TRANSACTION METHODS
+   GUARDIAN / CONTACTS DATABASE LOGIC
    ========================================================================== */
 
+// Saves a new emergency contact to the device storage
 export const addLocalContact = async (
   name: string,
   phone: string,
 ): Promise<number | null> => {
-  if (!db) return null;
+  if (!db) return null; // safety check to ensure db is open first
   try {
     const result = await db.runAsync(
       "INSERT INTO contacts (name, phone) VALUES (?, ?);",
       [name, phone],
     );
-    return result.lastInsertRowId;
+    return result.lastInsertRowId; // need this ID to handle state updates or deletes later
   } catch (error) {
     console.error("Failed to insert contact into SQLite:", error);
     return null;
   }
 };
 
+// Grabs all saved guardians from the database, newest first
 export const getLocalContacts = async (): Promise<Contact[]> => {
   if (!db) return [];
   try {
@@ -91,6 +94,7 @@ export const getLocalContacts = async (): Promise<Contact[]> => {
   }
 };
 
+// Wipe a guardian out of the database using their unique row ID
 export const deleteLocalContact = async (id: number): Promise<void> => {
   if (!db) return;
   try {
@@ -101,9 +105,10 @@ export const deleteLocalContact = async (id: number): Promise<void> => {
 };
 
 /* ==========================================================================
-   WAYPOINTS (LOCATION) TRANSACTION METHODS
+   WAYPOINT / LOCATION DATABASE LOGIC
    ========================================================================== */
 
+// Logs current GPS position locally. Sets synced to 0 because it hasn't hit Firebase yet
 export const saveLocalWaypoint = async (
   lat: number,
   lng: number,
@@ -120,6 +125,7 @@ export const saveLocalWaypoint = async (
   }
 };
 
+// Pulls any coordinates that were saved while offline so the background worker can sync them to the cloud
 export const getUnsyncedWaypoints = async (): Promise<Waypoint[]> => {
   if (!db) return [];
   try {

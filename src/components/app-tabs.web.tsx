@@ -16,23 +16,26 @@ import { ThemedView } from "./themed-view";
 
 import { Colors, MaxContentWidth, Spacing } from "@/constants/theme";
 
+// Main layout wrapper for the web version of our tabs
 export default function AppTabsWeb() {
   return (
     <Tabs>
+      {/* Keeps the content container taking up the full height */}
       <TabSlot style={{ height: "100%" }} />
+
       <TabList asChild>
         <CustomTabList>
-          {/* 1. Shield Dashboard Trigger */}
+          {/* Main dashboard tab for turning the tracker on/off */}
           <TabTrigger name="index" href="/" asChild>
             <TabButton>Guard</TabButton>
           </TabTrigger>
 
-          {/* 2. Geolocation Map Trigger */}
+          {/* Map tab for checking live GPS location later */}
           <TabTrigger name="map" href="/map" asChild>
             <TabButton>Live Map</TabButton>
           </TabTrigger>
 
-          {/* 3. Emergency Contacts Trigger */}
+          {/* Contacts tab to manage emergency numbers/guardians */}
           <TabTrigger name="contacts" href="/contacts" asChild>
             <TabButton>Guardians</TabButton>
           </TabTrigger>
@@ -42,17 +45,21 @@ export default function AppTabsWeb() {
   );
 }
 
+// Reusable custom button style for individual tabs
 export function TabButton({
   children,
   isFocused,
   ...props
 }: TabTriggerSlotProps) {
   return (
+    // Added a slight opacity change here so the user gets visual feedback when clicking
     <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+      {/* Changes the background color depending on if the tab is selected or not */}
       <ThemedView
         type={isFocused ? "backgroundSelected" : "backgroundElement"}
         style={styles.tabButtonView}
       >
+        {/* Dim the text color slightly if the tab isn't active */}
         <ThemedText
           type="small"
           themeColor={isFocused ? "text" : "textSecondary"}
@@ -64,21 +71,24 @@ export function TabButton({
   );
 }
 
+// Custom bar container that holds all our tabs together
 export function CustomTabList(props: TabListProps) {
+  // Grab system light/dark theme so colors don't look weird
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
 
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        {/* Re-branded custom title matching SafeRoute pitch */}
+        {/* Customized header text to match the project name */}
         <ThemedText type="smallBold" style={styles.brandText}>
           🛡️ SafeRoute Portal
         </ThemedText>
 
+        {/* This injects the actual tab triggers we defined up in AppTabsWeb */}
         {props.children}
 
-        {/* Keeping the link but updating context to look like help docs */}
+        {/* External link placeholder repurposed as a help button */}
         <ExternalLink href="https://docs.expo.dev" asChild>
           <Pressable style={styles.externalPressable}>
             <ThemedText type="link">Help</ThemedText>
@@ -102,22 +112,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
-    bottom: 0, // Keeps the layout bar pinned to view borders
+    bottom: 0, // Pins the tab bar down to the bottom of the screen
   },
   innerContainer: {
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
+    borderRadius: Spacing.five, // Round edges for a cleaner UI look
     flexDirection: "row",
     alignItems: "center",
     flexGrow: 1,
     gap: Spacing.two,
     maxWidth: MaxContentWidth,
     borderWidth: 1,
-    borderColor: "#2C2C2C",
+    borderColor: "#2C2C2C", // Dark border lines matching our theme layout
   },
   brandText: {
-    marginRight: "auto",
+    marginRight: "auto", // Forces the logo text to stay on the left side
     color: "#FFFFFF",
   },
   pressed: {

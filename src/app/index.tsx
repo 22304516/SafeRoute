@@ -1,98 +1,130 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+import React, { useState } from "react";
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function HomeScreen() {
+  const [isGuardActive, setIsGuardActive] = useState<boolean>(false);
+
+  const toggleGuardSystem = () => {
+    setIsGuardActive(!isGuardActive);
+    Alert.alert(
+      isGuardActive ? "System Paused" : "Guard Active",
+      isGuardActive
+        ? "SafeRoute tracking is on standby."
+        : "SafeRoute is now actively monitoring device sensors.",
+    );
+  };
+
+  const triggerInstantSOS = () => {
+    Alert.alert(
+      "🚨 EMERGENCY SOS",
+      "Broadcasting current GPS vector to verified emergency contacts!",
+    );
+  };
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>SafeRoute</Text>
+        <Text style={styles.tagline}>Solo Travel Protection Shield</Text>
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <View style={styles.statusBox}>
+        <Text style={styles.statusLabel}>SHIELD STATUS</Text>
+        <Text
+          style={[
+            styles.statusValue,
+            isGuardActive ? styles.textActive : styles.textStandby,
+          ]}
+        >
+          {isGuardActive ? "🛡️ ACTIVE SECURE" : "💤 SYSTEM STANDBY"}
+        </Text>
+      </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <TouchableOpacity
+        style={[
+          styles.mainButton,
+          isGuardActive ? styles.btnActive : styles.btnStandby,
+        ]}
+        onPress={toggleGuardSystem}
+      >
+        <Text style={styles.buttonText}>
+          {isGuardActive ? "Deactivate Guard" : "Initialize Journey Guard"}
+        </Text>
+      </TouchableOpacity>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <TouchableOpacity style={styles.sosButton} onPress={triggerInstantSOS}>
+        <Text style={styles.sosText}>INSTANT SOS</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: "#121212",
+    padding: 24,
+    justifyContent: "space-between",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  header: {
+    marginTop: 40,
+    alignItems: "center",
   },
   title: {
-    textAlign: 'center',
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    letterSpacing: 1,
   },
-  code: {
-    textTransform: 'uppercase',
+  tagline: {
+    fontSize: 14,
+    color: "#BB86FC",
+    marginTop: 4,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  statusBox: {
+    backgroundColor: "#1E1E1E",
+    padding: 20,
+    borderRadius: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2C2C2C",
+  },
+  statusLabel: {
+    fontSize: 12,
+    color: "#A0A0A0",
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  statusValue: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  textActive: { color: "#03DAC6" },
+  textStandby: { color: "#CF6679" },
+  mainButton: {
+    paddingVertical: 18,
+    borderRadius: 30,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  btnStandby: { backgroundColor: "#03DAC6" },
+  btnActive: { backgroundColor: "#CF6679" },
+  buttonText: {
+    color: "#000000",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  sosButton: {
+    backgroundColor: "#B00020",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  sosText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "900",
+    letterSpacing: 1,
   },
 });

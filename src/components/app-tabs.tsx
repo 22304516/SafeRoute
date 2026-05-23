@@ -38,7 +38,7 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Guardians</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           // Just using the home icon as a placeholder for now until a proper icon is added
-          src={require("@/assets/images/tabIcons/home.png")}
+          src={require("@/assets/images/tabIcons/contact.png")}
           renderingMode="template"
         />
       </NativeTabs.Trigger>

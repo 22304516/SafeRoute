@@ -42,6 +42,16 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      {/* Tab 4: Hardware sensor fall-detection page */}
+      <NativeTabs.Trigger name="sensors">
+        <NativeTabs.Trigger.Label>sensors</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          // Re-using the explore icon as a temporary placeholder for the sensor view
+          src={require("@/assets/images/tutorial-web.png")}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

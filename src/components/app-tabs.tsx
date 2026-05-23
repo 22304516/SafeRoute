@@ -28,7 +28,7 @@ export default function AppTabs() {
       <NativeTabs.Trigger name="map">
         <NativeTabs.Trigger.Label>Map</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require("@/assets/images/tabIcons/explore.png")}
+          src={require("@/assets/images/tabIcons/map.png")}
           renderingMode="template"
         />
       </NativeTabs.Trigger>
@@ -48,7 +48,7 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>sensors</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           // Re-using the explore icon as a temporary placeholder for the sensor view
-          src={require("@/assets/images/tutorial-web.png")}
+          src={require("@/assets/images/tabIcons/sensors.png")}
           renderingMode="template"
         />
       </NativeTabs.Trigger>

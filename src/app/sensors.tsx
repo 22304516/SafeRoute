@@ -85,7 +85,7 @@ export default function FallDetectionScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Impact Guardian</Text>
+        <Text style={styles.title}>Impact Protection</Text>
         <Text style={styles.tagline}>Hardware Fall-Detection Monitoring</Text>
       </View>
 

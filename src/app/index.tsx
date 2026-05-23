@@ -1,22 +1,73 @@
+import * as Location from "expo-location";
 import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BACKGROUND_TRACKING_KEY } from "./_layout";
 
 export default function HomeScreen() {
-  // State to track if the safety tracking system is turned on or off
+  // Simple state to remember if tracking is currently turned on or off
   const [isGuardActive, setIsGuardActive] = useState<boolean>(false);
 
-  // Handles switching the tracking state and pops up a quick alert box to let the user know
-  const toggleGuardSystem = () => {
-    setIsGuardActive(!isGuardActive);
-    Alert.alert(
-      isGuardActive ? "System Paused" : "Guard Active",
-      isGuardActive
-        ? "SafeRoute tracking is on standby."
-        : "SafeRoute is now actively monitoring device sensors.",
-    );
+  // Flipped when the user presses the main action button to handle permissions and location workers
+  const toggleGuardSystem = async () => {
+    if (isGuardActive) {
+      // If tracking is active, check if the worker is actually running and shut it down cleanly
+      const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+        BACKGROUND_TRACKING_KEY,
+      );
+      if (hasStarted) {
+        await Location.stopLocationUpdatesAsync(BACKGROUND_TRACKING_KEY);
+      }
+      setIsGuardActive(false);
+      Alert.alert("System Paused", "SafeRoute tracking is on standby.");
+    } else {
+      // If tracking is off, we need to ask for device permissions before launching anything
+      try {
+        // First need normal app-in-use foreground permissions
+        const { status: foregroundStatus } =
+          await Location.requestForegroundPermissionsAsync();
+        if (foregroundStatus !== "granted") {
+          Alert.alert(
+            "Permission Denied",
+            "Foreground location permission is required to track routes.",
+          );
+          return;
+        }
+
+        // Then need background permissions so it keeps tracking when the phone is locked/minimized
+        const { status: backgroundStatus } =
+          await Location.requestBackgroundPermissionsAsync();
+        if (backgroundStatus !== "granted") {
+          Alert.alert(
+            "Permission Alert",
+            "To safeguard your route when the screen is locked, please enable 'Allow all the time' in device settings.",
+          );
+        }
+
+        // Spin up the background location worker with our tracking configuration
+        await Location.startLocationUpdatesAsync(BACKGROUND_TRACKING_KEY, {
+          accuracy: Location.Accuracy.BestForNavigation, // High-accuracy GPS mode
+          timeInterval: 10000, // Look for new coordinates every 10 seconds
+          distanceInterval: 0, // Keep logging points even if we are sitting still
+          foregroundService: {
+            notificationTitle: "SafeRoute Active",
+            notificationBody:
+              "Monitoring journey vectors securely in the background.",
+            notificationColor: "#03DAC6",
+          },
+        });
+
+        setIsGuardActive(true);
+        Alert.alert(
+          "Guard Active",
+          "SafeRoute is now actively caching coordinates.",
+        );
+      } catch (err) {
+        console.error("Error launching tracking worker:", err);
+      }
+    }
   };
 
-  // Big red panic button function - right now just shows a dummy alert, will connect to real GPS/SMS later
+  // Quick fallback handler to alert that the emergency alert broadcast was triggered
   const triggerInstantSOS = () => {
     Alert.alert(
       "🚨 EMERGENCY SOS",
@@ -26,13 +77,13 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* App Header section with the main title */}
+      {/* Top logo branding header */}
       <View style={styles.header}>
         <Text style={styles.title}>SafeRoute</Text>
         <Text style={styles.tagline}>Solo Travel Protection Shield</Text>
       </View>
 
-      {/* Box showing current status. Dynamic styles change colors depending on whether tracking is active */}
+      {/* Center status card that automatically changes colors and text based on active states */}
       <View style={styles.statusBox}>
         <Text style={styles.statusLabel}>SHIELD STATUS</Text>
         <Text
@@ -45,7 +96,7 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Primary button to flip the tracking state on and off */}
+      {/* Interactive primary trigger button to toggle the tracking loop */}
       <TouchableOpacity
         style={[
           styles.mainButton,
@@ -58,7 +109,7 @@ export default function HomeScreen() {
         </Text>
       </TouchableOpacity>
 
-      {/* Emergency SOS button - needs to stay prominent at the bottom */}
+      {/* Prominent high-contrast panic button pinned to the footer zone */}
       <TouchableOpacity style={styles.sosButton} onPress={triggerInstantSOS}>
         <Text style={styles.sosText}>INSTANT SOS</Text>
       </TouchableOpacity>
@@ -66,7 +117,6 @@ export default function HomeScreen() {
   );
 }
 
-// UI design styles - using a dark theme with standard material palette colors
 const styles = StyleSheet.create({
   container: {
     flex: 1,

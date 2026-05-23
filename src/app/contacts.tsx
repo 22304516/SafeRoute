@@ -71,8 +71,8 @@ export default function ContactsScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Trusted Guardians</Text>
       <Text style={styles.subtitle}>
-        These contacts are parsed locally out of relational storage during
-        device runtime alerts.
+        Grabs your emergency contacts from the app's saved list when you trigger
+        an alert.
       </Text>
 
       {/* Input form section for adding new contacts */}

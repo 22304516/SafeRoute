@@ -6,7 +6,7 @@ import { useColorScheme } from "react-native";
 export default function AppTabs() {
   // Checking if the phone is on dark mode or light mode
   const scheme = useColorScheme();
-  // Fallback to light mode if the system scheme is acting weird or unspecified
+  // Fallback to light mode if the system scheme is acting weird
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
 
   return (

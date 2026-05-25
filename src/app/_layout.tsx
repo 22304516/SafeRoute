@@ -1,6 +1,6 @@
 // Getting firebase initialized right at the start
 import "@/services/firebaseConfig";
-// Bringing in our local database setup script
+// Bringing in  local database setup script
 import { initDatabase, saveLocalWaypoint } from "@/services/sqliteService";
 import {
     DarkTheme,
@@ -12,11 +12,11 @@ import * as TaskManager from "expo-task-manager";
 import React from "react";
 import { useColorScheme } from "react-native";
 
-// Custom splash screen animation and our main tab buttons
+// Custom splash screen animation and  main tab buttons
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import AppTabs from "@/components/app-tabs";
 
-// Define a distinct key identifier for our background task
+// Define a distinct key identifier for  background task
 export const BACKGROUND_TRACKING_KEY = "saferoute-geo-worker";
 
 // Register the background runner in the absolute global scope
@@ -32,7 +32,7 @@ TaskManager.defineTask(BACKGROUND_TRACKING_KEY, async ({ data, error }) => {
       const latestLocation = locations[0];
       const { latitude, longitude } = latestLocation.coords;
 
-      // Directly stream the background GPS coordinates straight into your SQLite cache!
+      // Directly stream the background GPS coordinates straight into  SQLite cache for offline persistence, and eventual syncing to Firestore when the user gets back online
       await saveLocalWaypoint(latitude, longitude);
     }
   }

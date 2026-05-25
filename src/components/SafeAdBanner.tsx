@@ -3,7 +3,7 @@ import { Platform, StyleSheet, Text, View } from "react-native";
 
 // Try to safely check if we are running in a native production build environment.
 // If we are just running inside the Expo Go sandbox player, we will fall back
-// to our clean mock banner layout to prevent native SDK loader crashes.
+// to mock banner layout to prevent native SDK loader crashes.
 let BannerAd: any = null;
 let TestIds: any = null;
 
